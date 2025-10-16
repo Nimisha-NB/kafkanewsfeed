@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, request
+from auth import verify_token
 from kafka import KafkaProducer
 import json
 import threading
 from news_api import fetch_articles
 from recommender import recommend_articles,user_history
 from consumer import consume_user_events
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app) 
 
 
 # Kafka producer
@@ -50,6 +52,17 @@ def user_event():
 def recommendations(user_id):
     recs = recommend_articles(user_id)
     return jsonify(recs)
+
+# @app.route("/recommendations", methods=["GET"])
+# @verify_token
+# def recommendations():
+#     # Extract UID from Firebase token
+#     user_id = request.user["uid"]
+
+#     # Pass it into your recommender function
+#     recs = recommend_articles(user_id)
+
+#     return jsonify(recs)
 
 
 if __name__ == "__main__":

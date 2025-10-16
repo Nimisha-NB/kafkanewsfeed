@@ -1,95 +1,106 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { auth } from "../firebase";
+import { useRouter } from "next/navigation";
+
+export default function HomePage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [recs, setRecs] = useState([]);
+
+  const router = useRouter();
+  // const [currentUser, setCurrentUser] = useState(null);
+
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       console.log("Logged in user:", user.email);
+  //       setCurrentUser(user);
+  //     } else {
+  //       console.log("No user logged in");
+  //       setCurrentUser(null);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+
+  const handleSignup = async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      alert("Signup successful!");
+    } catch (err) {
+      console.error(err);
+      alert("Signup failed!");
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const token = await userCredential.user.getIdToken();
+      console.log(token);
+
+      // Send token to Flask backend
+      const res = await fetch(
+        "http://localhost:5000/recommendations/<user_id>",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setRecs(data);
+      console.log(data);
+      alert("Login successful!");
+      router.push("/dashboard"); // ✅ redirect to new page
+    } catch (err) {
+      console.error(err);
+      alert("Login failed!");
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <main style={{ padding: 40 }}>
+      <h1>Kafka News Recommender</h1>
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ display: "block", marginBottom: 10 }}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={{ display: "block", marginBottom: 10 }}
+      />
+      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleSignup} style={{ marginLeft: 10 }}>
+        Signup
+      </button>
+      {/* 
+      {recs.length > 0 && (
+        <div style={{ marginTop: 30 }}>
+          <h3>Your Recommendations:</h3>
+          <ul>
+            {recs.map((item, i) => (
+              <li key={i}>{item.title}</li>
+            ))}
+          </ul>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )} */}
+    </main>
   );
 }
