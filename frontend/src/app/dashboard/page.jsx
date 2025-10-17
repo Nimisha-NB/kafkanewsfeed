@@ -15,16 +15,16 @@ export default function Dashboard() {
       if (currentUser) {
         setUser(currentUser);
       } else {
-        router.push("/"); // redirect to login if not logged in
+        router.push("/login"); 
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // Logout function
   const handleLogout = async () => {
     await signOut(auth);
-    router.push("/"); // go back to login page
+    router.push("/login");
   };
 
   if (!user) return <p>Loading...</p>;
@@ -32,7 +32,7 @@ export default function Dashboard() {
   return (
     <main style={{ padding: 40 }}>
       <h1>Welcome, {user.email}!</h1>
-      <button onClick={handleLogout} style={{ marginTop: 20 }}>
+      <button onClick={handleLogout} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">
         Logout
       </button>
     </main>
