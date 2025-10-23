@@ -1,24 +1,37 @@
-// app/articles/page.jsx
 "use client"
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/firebase"
+import { useRouter } from "next/navigation";
+import { signOut,onAuthStateChanged } from "firebase/auth"
 
 export default function ArticlesPage() {
     const [articles, setArticles] = useState([])
     const [uid, setUid] = useState()
+    const router = useRouter();
 
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            setUid(user.uid)
-        } else {
-        }
-    })
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUid(user.uid)
+            } else {
+                router.push("/login") 
+            }
+        })
+        return () => unsubscribe() 
+    }, [router])
+
+  const handleLogout = async () => {
+        await signOut(auth);
+        router.push("/login");
+      };
 
     const fetchArticles = async () => {
+       
         try {
+            console.log("Fetching recommendations for UID:", uid);
             const resp = await fetch("http://localhost:5000/recommendations/" + uid, {
                 method: "GET",
                 headers: {
@@ -66,53 +79,69 @@ export default function ArticlesPage() {
     }, [uid])
 
     return (
-        <div className="p-6">
-            <h1 className="text-3xl font-semibold mb-6">Latest Articles</h1>
+        <div className="min-h-screen bg-muted/40">
+            <div className="container mx-auto max-w-7xl p-6 md:p-8">
 
-            {articles.length === 0 ? (
-                <p className="text-muted-foreground">No articles found.</p>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles.map((article, idx) => (
-                        <Card key={idx} className="p-5 flex flex-col justify-between hover:shadow-lg transition-shadow">
-                            <div>
-                                <h2 className="text-lg font-semibold mb-2">
-                                    <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                        {article.title}
-                                    </a>
-                                </h2>
+                <header className="flex items-center justify-between mb-8 pb-6 border-b">
+                    <h1 className="text-3xl font-bold tracking-tight">My Recommendations</h1>
 
-                                <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{article.description}</p>
+                    <div className="flex items-center gap-3">
+                    <Button variant="outline" onClick={() => router.push("/articles")}>
+                            ← Back to Articles
+                    </Button>
 
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {article.tags?.slice(0, 5).map((tag) => (
-                                        <span key={tag} className="text-xs bg-muted px-2 py-1 rounded-md">
-                                            #{tag}
-                                        </span>
-                                    ))}
+                    <Button onClick={handleLogout} variant="default">
+                        Logout
+                        </Button>
+                        </div>
+                </header>
+
+                {articles.length === 0 ? (
+                    <p className="text-muted-foreground text-center">No articles found.</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {articles.map((article, idx) => (
+                            <Card key={idx} className="flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
+                                
+                                <div className="p-5">
+                                    <h2 className="text-xl font-bold mb-2 line-clamp-2">
+                                        <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                            {article.title}
+                                        </a>
+                                    </h2>
+                                    
+                                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{article.description}</p>
+
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {article.tags?.slice(0, 5).map((tag) => (
+                                            <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent bg-secondary text-secondary-foreground">
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="mt-auto text-xs text-muted-foreground">
-                                <p>
-                                    📰 <span className="font-medium">{article.source}</span>
-                                </p>
-                                <p>
-                                    📅{" "}
-                                    {new Date(article.publishedAt).toLocaleString("en-IN", {
-                                        dateStyle: "medium",
-                                        timeStyle: "short",
-                                    })}
-                                </p>
-
-                                <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => openArticle(article.url, article.article_id)}>
-                                    Read Full Article
-                                </Button>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            )}
+                                <div className="mt-auto text-xs text-muted-foreground p-5 pt-4 border-t space-y-3">
+                                    <p className="flex items-center gap-1.5">
+                                        📰 <span className="font-medium text-foreground">{article.source}</span>
+                                    </p>
+                                    <p className="flex items-center gap-1.5">
+                                        📅{" "}
+                                        {new Date(article.publishedAt).toLocaleString("en-IN", {
+                                            dateStyle: "medium",
+                                            timeStyle: "short",
+                                        })}
+                                    </p>
+                                    
+                                    <Button variant="link" size="sm" className="mt-2 w-auto p-0 h-auto font-semibold text-primary" onClick={() => openArticle(article.url, article.article_id)}>
+                                        Read Full Article
+                                    </Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
