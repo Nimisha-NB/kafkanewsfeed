@@ -45,7 +45,7 @@ export default function LoginPage() {
       if (!res.ok) throw new Error("Backend login failed");
 
       alert("Login successful!");
-      router.push("/dashboard");
+      router.push("/articles");
     } catch (err) {
       console.error(err);
       setError("Invalid email or password");
@@ -53,54 +53,54 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+    <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
+      <div className="bg-card text-card-foreground rounded-xl border shadow-md p-6 sm:p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-foreground mb-6 text-center tracking-tight">
           Login
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            className="w-full h-10 inline-flex items-center justify-center rounded-md text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
           >
             Login
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Don't have an account?{" "}
           <Link
-            href="/signin"
-            className="text-blue-600 font-semibold hover:underline"
+            href="/signin" 
+            className="font-medium text-primary hover:underline underline-offset-4"
           >
             Sign Up
           </Link>
